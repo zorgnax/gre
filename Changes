@@ -1,5 +1,8 @@
 Revision history for App::Gre.
 
+0.06  Tue Aug 25 11:27:41 CDT 2015
+    - fix POD error
+
 0.05  Tue Aug 25 11:15:55 CDT 2015
     - passthru option sets style 3
     - More tests

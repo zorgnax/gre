@@ -2,7 +2,7 @@ package App::Gre;
 use strict;
 use warnings;
 
-our $VERSION = "0.05";
+our $VERSION = "0.06";
 
 1;
 
@@ -246,7 +246,7 @@ example,
 
     $ gre '(foo)(bar)' -p='<<$2-$1>>'
 
--A -B -C -A<n> -B<n> -C<n> will show some lines of context around
+-A -B -C -AE<lt>nE<gt> -BE<lt>nE<gt> -CE<lt>nE<gt> will show some lines of context around
 the match. -B for before, -A after, -C both. All of these can take
 an optional number parameter. If missing it will be 2.
 
