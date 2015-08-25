@@ -1,6 +1,26 @@
 use Test::More;
 use warnings;
 
+sub runcmd {
+    my ($cmd) = @_;
+    system "$cmd >../stdout 2>../stderr";
+    $EXITCODE = $? >> 8;
+    if (open my $fh, "<", "../stdout") {
+        $STDOUT = do {local $/; <$fh>};
+        close $fh;
+    }
+    if (open my $fh, "<", "../stderr") {
+        $STDERR = do {local $/; <$fh>};
+        close $fh;
+    }
+    if ($ENV{DEBUG}) {
+        print "STDOUT: $STDOUT\n";
+        print "STDERR: $STDERR\n";
+        print "EXITCODE: $EXITCODE\n";
+    }
+    END {system "rm ../stdout ../stderr"}
+}
+
 chdir "t/data";
 $ENV{PATH} = "../../bin:$ENV{PATH}";
 
@@ -146,25 +166,56 @@ pokemon.mon
 EOSTR
 ok $test, "print";
 
-done_testing;
+runcmd("gre -passthru zard pokemon.mon");
+$test = $STDOUT =~ /Chari${e}zard${e}\nSquirtle\n/m;
+ok $test, "passthru";
 
-sub runcmd {
-    my ($cmd) = @_;
-    system "$cmd >../stdout 2>../stderr";
-    $EXITCODE = $? >> 8;
-    if (open my $fh, "<", "../stdout") {
-        $STDOUT = do {local $/; <$fh>};
-        close $fh;
-    }
-    if (open my $fh, "<", "../stderr") {
-        $STDERR = do {local $/; <$fh>};
-        close $fh;
-    }
-    if ($ENV{DEBUG}) {
-        print "STDOUT: $STDOUT\n";
-        print "STDERR: $STDERR\n";
-        print "EXITCODE: $EXITCODE\n";
-    }
-    END {system "rm ../stdout ../stderr"}
-}
+runcmd("gre apple -t");
+$test = $STDOUT eq <<EOSTR;
+fruits.txt
+pokemon.mon
+dir1/bar.js
+dir1/foo.html
+dir1/simpsons.txt
+EOSTR
+ok $test, "print files ignore regexp";
+
+runcmd("gre apple fruits.txt -v -k");
+$test = $STDOUT eq <<EOSTR;
+fruits.txt
+2:grape
+4:banana
+5:pear
+6:cherries
+7:peach
+8:orange
+9:grapefruit
+10:jackfruit
+11:persimmon
+EOSTR
+ok $test, "invert match";
+
+runcmd("gre apple fruits.txt -y1 -k");
+$test = $STDOUT eq <<EOSTR;
+fruits.txt
+1:apple
+3:pineapple
+EOSTR
+ok $test, "style 1";
+
+runcmd("gre apple fruits.txt -y2 -k");
+$test = $STDOUT eq <<EOSTR;
+fruits.txt:1:apple
+fruits.txt:3:pineapple
+EOSTR
+ok $test, "style 2";
+
+runcmd("gre apple fruits.txt -y3 -k");
+$test = $STDOUT eq <<EOSTR;
+apple
+pineapple
+EOSTR
+ok $test, "style 3";
+
+done_testing;
 

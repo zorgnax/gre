@@ -180,6 +180,7 @@ sub parse_args {
         }
         elsif ($arg =~ /^-passthr(u|ough)$/) {
             $opts{passthru} = 1;
+            $opts{style} = 3;
         }
         elsif ($arg =~ /^-(k|nocolor)$/) {
             $opts{nocolor} = 1;
@@ -497,7 +498,7 @@ sub singleline_match {
             last if !$match;
             $lmatches++;
             $fmatches++;
-            if ($fmatches == 1) {
+            if ($fmatches == 1 && !$opts{passthru}) {
                 display_file($file);
             }
             display_match($file, $., $_);
