@@ -1,5 +1,12 @@
 Revision history for App::Gre.
 
+0.05 2015-08-?? JACOBG
+    - Specified min perl version 5.6.0 in metadata and code
+    - Added github repo to the dist metadata and doc
+    - Specified license type of 'perl' in dist metadata
+    - Put all dependencies in PREREQ_PM and TEST_REQUIRES if supported
+    - Removed App-Gre-0.04.tar.gz from MANIFEST
+
 0.04  Mon Aug 24 17:55:05 CDT 2015
     - Messing with ExtUtils::MakeMaker options.
     - More tests

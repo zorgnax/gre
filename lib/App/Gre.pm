@@ -1,8 +1,10 @@
 package App::Gre;
+
+use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.04";
+our $VERSION = '0.05';
 
 1;
 
@@ -255,6 +257,10 @@ an optional number parameter. If missing it will be 2.
 grep(1) http://www.gnu.org/savannah-checkouts/gnu/grep/manual/grep.html
 
 ack(1) http://beyondgrep.com/
+
+=head1 REPOSITORY
+
+L<https://github.com/zorgnax/gre>
 
 =head1 AUTHOR
 
