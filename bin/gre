@@ -875,6 +875,15 @@ example,
 the match. -B for before, -A after, -C both. All of these can take
 an optional number parameter. If missing it will be 2.
 
+More Info / Contact
+===================
+
+github https://github.com/zorgnax/gre
+
+metacpan https://metacpan.org/pod/App::Gre
+
+email gelbman@gmail.com
+
 EOMAN
     open my $fh, "|-", "less -SIMR";
     print $fh $man;

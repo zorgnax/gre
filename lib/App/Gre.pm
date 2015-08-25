@@ -2,7 +2,7 @@ package App::Gre;
 use strict;
 use warnings;
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 
 1;
 
@@ -252,9 +252,15 @@ an optional number parameter. If missing it will be 2.
 
 =head1 SEE ALSO
 
-grep(1) http://www.gnu.org/savannah-checkouts/gnu/grep/manual/grep.html
+grep(1) L<http://www.gnu.org/savannah-checkouts/gnu/grep/manual/grep.html>
 
-ack(1) http://beyondgrep.com/
+ack(1) L<http://beyondgrep.com/>
+
+=head1 WEBSITES FOR THIS SCRIPT
+
+github L<https://github.com/zorgnax/gre>
+
+metacpan L<https://metacpan.org/pod/App::Gre>
 
 =head1 AUTHOR
 
