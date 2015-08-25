@@ -1,5 +1,9 @@
 Revision history for App::Gre.
 
+0.04  Mon Aug 24 17:55:05 CDT 2015
+    - Messing with ExtUtils::MakeMaker options.
+    - More tests
+
 0.01  Fri Aug 14 15:39:25 2015
-      - gre, a grep clone.
+    - gre, a grep clone.
 

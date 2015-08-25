@@ -107,6 +107,9 @@ for my $path (@paths) {
     }
     push @files, {path => $path, given => 1};
 }
+if (@paths && !@files) {
+    exit 1;
+}
 
 my $nmatches = 0;
 my $nfiles = 0;
@@ -431,8 +434,7 @@ sub multiline_match {
     my $matches = 0;
     while ($content =~ /$regexp/gms) {
         if ($file && !$matches) {
-            print "\n" if $nmatches;
-            print "\e[1;32m$file->{path}\e[0m\n";
+            display_file($file);
         }
         $matches++;
         if ($opts{print}) {

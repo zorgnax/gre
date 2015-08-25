@@ -9,6 +9,6 @@ WriteMakefile(
     PREREQ_PM => {
         "Test::More" => "0",
     },
-    clean => {FILES => "App-Gre-*.tar.gz"},
+    clean => {FILES => "App-Gre-*.tar.gz *.bak"},
 );
 
