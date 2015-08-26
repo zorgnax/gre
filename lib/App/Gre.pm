@@ -1,8 +1,10 @@
 package App::Gre;
+
+use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.07";
+our $VERSION = "0.08";
 
 1;
 
@@ -246,9 +248,10 @@ example,
 
     $ gre '(foo)(bar)' -p='<<$2-$1>>'
 
--A -B -C -AE<lt>nE<gt> -BE<lt>nE<gt> -CE<lt>nE<gt> will show some lines of context around
-the match. -B for before, -A after, -C both. All of these can take
-an optional number parameter. If missing it will be 2.
+-A -B -C -AE<lt>nE<gt> -BE<lt>nE<gt> -CE<lt>nE<gt> will show some
+lines of context around the match. -B for before, -A after, -C both.
+All of these can take an optional number parameter. If missing it
+will be 2.
 
 =head1 SEE ALSO
 
@@ -256,11 +259,13 @@ grep(1) L<http://www.gnu.org/savannah-checkouts/gnu/grep/manual/grep.html>
 
 ack(1) L<http://beyondgrep.com/>
 
-=head1 WEBSITES FOR THIS SCRIPT
+=head1 METACPAN
 
-github L<https://github.com/zorgnax/gre>
+L<https://metacpan.org/pod/App::Gre>
 
-metacpan L<https://metacpan.org/pod/App::Gre>
+=head1 REPOSITORY
+
+L<https://github.com/zorgnax/gre>
 
 =head1 AUTHOR
 
