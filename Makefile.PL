@@ -9,51 +9,52 @@ if ($mm_ver =~ /_/) {
     die $@ if $@;
 }
 
-my @REQUIRES = (
-    'strict'        => 0,
-    'warnings'      => 0,
-);
-
-my @TEST_REQUIRES = (
-    'Test::More'    => 0.88,
-);
-
-push(@REQUIRES, @TEST_REQUIRES) if $mm_ver < 6.64;
-
-WriteMakefile(
+my %params = (
     NAME => "App::Gre",
     VERSION_FROM => "lib/App/Gre.pm",
     ABSTRACT_FROM  => "lib/App/Gre.pm",
     AUTHOR => "Jacob Gelbman <gelbman\@gmail.com>",
     EXE_FILES => ["bin/gre"],
-    PREREQ_PM => { @REQUIRES },
-
-    ($mm_ver >= 6.64
-        ? (TEST_REQUIRES => { @TEST_REQUIRES })
-        : ()
-    ),
-
-    ($mm_ver >= 6.31
-        ? (LICENSE => 'perl')
-        : ()
-    ),
-
-    ($mm_ver >= 6.48
-        ? (MIN_PERL_VERSION => 5.006)
-        : ()
-    ),
-
-    ($mm_ver <= 6.45 ? () : (META_MERGE => {
-        'meta-spec' => { version => 2 },
-        resources => {
-            repository  => {
-                type => 'git',
-                web  => 'https://github.com/zorgnax/gre',
-                url  => 'https://github.com/zorgnax/gre.git',
-            },
-        },
-    })),
-
     clean => {FILES => "App-Gre-*.tar.gz *.bak"},
 );
+
+my @requires = (
+    strict => 0,
+    warnings => 0,
+);
+
+my @test_requires = (
+    "Test::More" => 0.88,
+);
+
+if ($mm_ver < 6.64) {
+    $params{PREREQ_PM} = {@requires, @test_requires};
+}
+else {
+    $params{PREREQ_PM} = {@requires};
+    $params{TEST_REQUIRES} = {@test_requires};
+}
+
+if ($mm_ver >= 6.31) {
+    $params{LICENSE} = "perl";
+}
+
+if ($mm_ver >= 6.48) {
+    $params{MIN_PERL_VERSION} = 5.006;
+}
+
+if ($mm_ver > 6.45) {
+    $params{META_MERGE} = {
+        "meta-spec" => {version => 2},
+        resources => {
+            repository => {
+                type => "git",
+                web => "https://github.com/zorgnax/gre",
+                url => "https://github.com/zorgnax/gre.git",
+            }
+        }
+    };
+}
+
+WriteMakefile(%params);
 
