@@ -253,6 +253,14 @@ lines of context around the match. -B for before, -A after, -C both.
 All of these can take an optional number parameter. If missing it
 will be 2.
 
+=head1 INSTALLATION
+
+gre is a single script with no dependencies. copy it to a place in your
+$PATH and it should work as-is. The App::Gre module is just an unused
+placeholder module to make it work with CPAN.
+
+You can also run "cpan App::Gre".
+
 =head1 SEE ALSO
 
 grep(1) L<http://www.gnu.org/savannah-checkouts/gnu/grep/manual/grep.html>
