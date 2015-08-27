@@ -1,5 +1,8 @@
 Revision history for App::Gre.
 
+0.09  Thu Aug 27 16:06:50 CDT 2015
+    - Repackage with new MakeMaker version
+
 0.08  Wed Aug 26 11:27:12 CDT 2015
     - Specified min perl version 5.6.0 in metadata and code
     - Added github repo to the dist metadata and doc
