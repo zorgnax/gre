@@ -86,6 +86,7 @@ my @defaults = (
     "-x=^#.+#\$",
     "-x=core[.]\\d+\$",
     "-x=~\$",
+    "-xe=yui",
 );
 
 parse_args([@defaults]);
