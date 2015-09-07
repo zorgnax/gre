@@ -34,14 +34,15 @@ my $test = $STDOUT =~ m{
 ok $test, "found the apples";
 
 runcmd("gre");
-$test = $STDOUT eq <<EOSTR;
-fruits.txt
-pokemon.mon
+my $out = join "", map "$_\n", sort split /\n/, $STDOUT;
+my $exp = <<EOSTR;
 dir1/bar.js
 dir1/foo.html
 dir1/simpsons.txt
+fruits.txt
+pokemon.mon
 EOSTR
-ok $test, "file listing recursive and textonly";
+is $out, $exp, "file listing recursive and textonly";
 
 runcmd("gre -ext=txt -no=simpsons");
 $test = $STDOUT eq <<EOSTR;
@@ -50,21 +51,23 @@ EOSTR
 ok $test, "file filtering";
 
 runcmd("gre -html -js");
-$test = $STDOUT eq <<EOSTR;
+$out = join "", map "$_\n", sort split /\n/, $STDOUT;
+$exp = <<EOSTR;
 dir1/bar.js
 dir1/foo.html
 EOSTR
-ok $test, "file filtering with combos";
+is $out, $exp, "file filtering with combos";
 
 runcmd("gre -X");
-$test = $STDOUT eq <<EOSTR;
+$out = join "", map "$_\n", sort split /\n/, $STDOUT;
+$exp = <<EOSTR;
+dir1/bar.js
+dir1/foo.html
+dir1/simpsons.txt
 fruits.txt
 fruits.txt.gz
 pokemon.mon
 pokemon.tar.gz
-dir1/bar.js
-dir1/foo.html
-dir1/simpsons.txt
 EOSTR
 ok $test, "disable builtin filters";
 
@@ -135,11 +138,12 @@ EOSTR
 ok $test, "list matches option";
 
 runcmd("gre -L Krusty");
-$test = $STDOUT eq <<EOSTR;
-fruits.txt
-pokemon.mon
+$out = join "", map "$_\n", sort split /\n/, $STDOUT;
+$exp = <<EOSTR;
 dir1/bar.js
 dir1/foo.html
+fruits.txt
+pokemon.mon
 EOSTR
 ok $test, "list nonmatches option";
 
@@ -171,12 +175,13 @@ $test = $STDOUT =~ /Chari${e}zard${e}\nSquirtle\n/m;
 ok $test, "passthru";
 
 runcmd("gre apple -t");
-$test = $STDOUT eq <<EOSTR;
-fruits.txt
-pokemon.mon
+$out = join "", map "$_\n", sort split /\n/, $STDOUT;
+$exp = <<EOSTR;
 dir1/bar.js
 dir1/foo.html
 dir1/simpsons.txt
+fruits.txt
+pokemon.mon
 EOSTR
 ok $test, "print files ignore regexp";
 
