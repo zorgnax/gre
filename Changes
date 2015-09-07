@@ -1,5 +1,8 @@
 Revision history for App::Gre.
 
+0.10  Mon Sep  7 13:08:08 CDT 2015
+    - Make sure sort order of readdir doesn't affect the test
+
 0.09  Thu Aug 27 16:06:50 CDT 2015
     - Repackage with new MakeMaker version
 
