@@ -11,4 +11,4 @@ t/data/fruits.txt
 t/data/fruits.txt.gz
 t/data/pokemon.mon
 t/data/pokemon.tar.gz
-t/gre.t
+t/test.t
