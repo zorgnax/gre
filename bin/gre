@@ -214,9 +214,9 @@ sub parse_args {
         elsif ($arg =~ /^-$/) {
             die "Invalid argument '-'\n";
         }
-        elsif ($arg =~ /^-(no)?(x)?(i)?(r)?ext(=(.*))?$/) {
-            my $value = $5 ? $6 : shift(@$pargs);
-            add_condition(no => $1, invert => $invert, ignorecase => $3, eq => !$4, what => "ext", type => $2, value => $value);
+        elsif ($arg =~ /^-(no)?(x)?(i)?(r)?(ext|abs)(=(.*))?$/) {
+            my $value = $6 ? $7 : shift(@$pargs);
+            add_condition(no => $1, invert => $invert, ignorecase => $3, eq => !$4, what => $5, type => $2, value => $value);
         }
         elsif ($arg =~ /^-(no)?(x)?(i)?(path|name|line1)?(e)?(=(.*))?$/) {
             my $value = $6 ? $7 : shift(@$pargs);
@@ -253,6 +253,7 @@ sub add_condition {
     $cond{binary} = 1 if $args{binary};
     $cond{text} = 1 if $args{text};
     $cond{value} = $args{value};
+    $cond{value} =~ s{([^/])/+$}{$1} if defined $cond{value};
     if (!$args{what}) {
         $cond{name} = 1;
     }
@@ -265,6 +266,10 @@ sub add_condition {
             $cond{value} = ext_regexp($cond{value});
             $cond{regexp} = 1;
         }
+    }
+    elsif ($args{what} eq "abs" && !$cond{regexp}) {
+        $cond{value} = abspath($cond{value});
+        $cond{"abs"} = 1;
     }
     else {
         $cond{$args{what}} = 1;
@@ -371,6 +376,12 @@ sub matches_condition {
         }
         $str = $file->{line1};
     }
+    elsif ($cond->{abs}) {
+        if (!defined $file->{abs}) {
+            $file->{abs} = abspath($file->{path});
+        }
+        $str = $file->{abs};
+    }
     elsif ($cond->{path}) {
         $str = $file->{path};
     }
@@ -395,6 +406,34 @@ sub matches_condition {
         }
         return 0;
     }
+}
+
+sub abspath {
+    my ($path) = @_;
+    my $abs = $path =~ m{^/} ? $path : "$ENV{PWD}/$path";
+    $abs =~ s{/+}{/};
+    my @a;
+    my @parts = split m{/}, $abs;
+    while (1) {
+        my $part = shift @parts;
+        last if !defined $part;
+        next if $part eq ".";
+        if ($part eq "..") {
+            pop @a;
+            next;
+        }
+        my $link = readlink(join("/", @a) . "/$part");
+        if (defined $link) {
+            @a = () if $link =~ m{^/};
+            $link =~ s{/+}{/};
+            my @lparts = split m{/}, $link;
+            unshift @parts, @lparts;
+            next;
+        }
+        push @a, $part;
+    }
+    $abs = join "/", @a;
+    return $abs;
 }
 
 sub match {
@@ -619,7 +658,7 @@ Usage: gre [-help] [-man]
            [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
            [-passthru] [-t] [-v] [-y<n>] [-X]
            [-[no]xbinary]
-           [-[no][x][i][r]ext=<str>]
+           [-[no][x][i][r][ext,abs]=<str>]
            [-[no][x][i][name,path,line1][e]=<str>]
            [-[perl,html,php,js,java,cc,...]]
            [<regexp>] [<file>...]
@@ -680,6 +719,12 @@ Options:
                    of the file name after a ".", so it can't be
                    used to match ".tar.gz" files, use -name for
                    that, or the unadorned -ext option.
+-[no][x][i][r]abs=<str>
+                   include files by their absolute path. "no",
+                   "x", "i", "r" options as described above.
+                   if you give a partial str (and "r" option
+                   is not provided) the value will become the
+                   absolute path.
 -[no][x][i]line1[e]=<str>
                    include files by the first line in the file.
                    "no", "x", "i", and "e" options as described above.

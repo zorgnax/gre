@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.10";
+our $VERSION = "0.11";
 
 1;
 
@@ -21,7 +21,7 @@ App::Gre - A grep clone with better file filtering
         [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
         [-passthru] [-t] [-v] [-y<n>] [-X]
         [-[no]xbinary]
-        [-[no][x][i][r]ext=<str>]
+        [-[no][x][i][r][ext,abs]=<str>]
         [-[no][x][i][name,path,line1][e]=<str>]
         [-[perl,html,php,js,java,cc,...]]
         [<regexp>] [<file>...]
@@ -82,6 +82,12 @@ App::Gre - A grep clone with better file filtering
                        of the file name after a ".", so it can't be
                        used to match ".tar.gz" files, use -name for
                        that, or the unadorned -ext option.
+    -[no][x][i][r]abs=<str>
+		       include files by their absolute path. "no",
+		       "x", "i", "r" options as described above.
+		       if you give a partial str (and "r" option
+		       is not provided) the value will become the
+		       absolute path.
     -[no][x][i]line1[e]=<str>
                        include files by the first line in the file.
                        "no", "x", "i", and "e" options as described above.
@@ -201,7 +207,7 @@ files, minimized js files, and more. See the output from -combos
 for the full list.
 
 "exclude" filters also have another property which the regular
-"include" filters don't have. They prune the recursive file search.
+"include" filters don't have: They prune the recursive file search.
 So -xe=.git will prevent any file under a .git directory from
 being searched (the extra e at the end of -xe means to use
 string equality not regexes for the match). Normal "inclusive"
