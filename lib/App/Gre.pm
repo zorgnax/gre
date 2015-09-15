@@ -259,6 +259,17 @@ lines of context around the match. -B for before, -A after, -C both.
 All of these can take an optional number parameter. If missing it
 will be 2.
 
+=head1 RC FILE
+
+You can place default options into ~/.grerc file. the format is a
+list of whitespace separated options that will be applied to every
+call to gre right after the built-in filters but before command
+line filters. For example:
+
+    -xpath=template_compiles
+    -xpath=templates/cache
+    -xe=yui
+
 =head1 INSTALLATION
 
 gre is a single script with no dependencies. copy it to a place in your

@@ -86,10 +86,10 @@ my @defaults = (
     "-x=^#.+#\$",
     "-x=core[.]\\d+\$",
     "-x=~\$",
-    "-xe=yui",
 );
 
 parse_args([@defaults]);
+read_rc();
 parse_args([@ARGV]);
 my $regexp = shift @args;
 push @paths, @args;
@@ -136,6 +136,45 @@ if ($regexp) {
 }
 else {
     exit !$nfiles;
+}
+
+sub read_rc {
+    my $home = (getpwuid($<))[7];
+    my $path = "$home/.grerc";
+    open my $fh, "<", $path or return;
+    my $content = do {local $/; <$fh>};
+    my $args = strtoargs($content);
+    parse_args($args);
+}
+
+sub strtoargs {
+    my ($str) = @_;
+    return [] if !defined $str;
+    my ($arg, @args);
+    while (1) {
+        if ($str =~ m{\G'([^']*)'}gc) {
+            $arg .= $1;
+        }
+        elsif ($str =~ m{\G"([^"]*)"}gc) {
+            $arg .= $1;
+        }
+        elsif ($str =~ m{\G([^'"\s]+)}gc) {
+            $arg .= $1;
+        }
+        elsif ($str =~ m{\G\s+}gc) {
+            if (defined $arg) {
+                push @args, $arg;
+                undef $arg;
+            }
+        }
+        else {
+            if (defined $arg) {
+                push @args, $arg;
+            }
+            last;
+        }
+    }
+    return \@args;
 }
 
 sub parse_args {
@@ -921,6 +960,18 @@ example,
 -A -B -C -A<n> -B<n> -C<n> will show some lines of context around
 the match. -B for before, -A after, -C both. All of these can take
 an optional number parameter. If missing it will be 2.
+
+.grerc file
+===========
+
+You can place default options into ~/.grerc file. the format is a
+list of whitespace separated options that will be applied to every
+call to gre right after the built-in filters but before command
+line filters. For example:
+
+    -xpath=template_compiles
+    -xpath=templates/cache
+    -xe=yui
 
 Installation
 ============
