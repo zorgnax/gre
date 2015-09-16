@@ -107,6 +107,7 @@ for my $path (@paths) {
         warn "File '$path' does not exist\n";
         next;
     }
+    $path =~ s{([^/])/+$}{$1};
     push @files, {path => $path, given => 1};
 }
 if (@paths && !@files) {
