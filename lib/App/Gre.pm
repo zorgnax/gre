@@ -117,19 +117,6 @@ files you want:
 This would find all .gz files that aren't .tar.gz files. The -X is
 necessary to disable the binary file filter.
 
-=head1 RECURSION
-
-This file recursion tries to match as early as possible then descend
-into directories. That way the top level matches can appear first even
-if one directory goes deep. This is a form of preorder traversal.
-At each level in the recursion it will do a match on all the regular
-files in the directory, then descend into the subdirectories.
-
-For example, if you have a home directory with foo.pl, bar.pl, and
-a zillion perl files under .cpan/, "gre -perl" will return foo.pl,
-bar.pl, then all the perl files under .cpan. It would be really
-annoying if it tried to get all the files under .cpan first.
-
 =head1 FILE FILTERING
 
 It's just as important to be able to filter files with regexes as

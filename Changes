@@ -1,5 +1,9 @@
 Revision history for App::Gre.
 
+0.11  Tue Oct 25 12:34:53 CDT 2016
+    - Regular file recursion. nothing fancy. and do not read symlinks
+      unless given on the command line.
+
 0.10  Mon Sep  7 13:08:08 CDT 2015
     - Make sure sort order of readdir doesn't affect the test
 

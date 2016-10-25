@@ -258,7 +258,7 @@ sub parse_args {
             my $value = $6 ? $7 : shift(@$pargs);
             add_condition(no => $1, invert => $invert, ignorecase => $3, eq => !$4, what => $5, type => $2, value => $value);
         }
-        elsif ($arg =~ /^-(no)?(x)?(i)?(path|name|line1)?(e)?(=(.*))?$/) {
+        elsif ($arg =~ /^-(no)?(x)?(i)?(path|name|line1|g)?(e)?(=(.*))?$/) {
             my $value = $6 ? $7 : shift(@$pargs);
             add_condition(no => $1, invert => $invert, ignorecase => $3, eq => $5, what => $4, type => $2, value => $value);
         }
@@ -294,7 +294,7 @@ sub add_condition {
     $cond{text} = 1 if $args{text};
     $cond{value} = $args{value};
     $cond{value} =~ s{([^/])/+$}{$1} if defined $cond{value};
-    if (!$args{what}) {
+    if (!$args{what} || $args{what} eq "g") {
         $cond{name} = 1;
     }
     elsif ($args{what} eq "ext") {
@@ -333,6 +333,7 @@ sub find {
     my ($files, $depth) = @_;
     for my $file (@$files) {
         lstat $file->{path};
+        next if -l _ && !$file->{"given"};
         $file->{directory} = -d _;
         if (!$file->{directory}) {
             $file->{include} = matches_conditions($file, \@includes, 1);
@@ -340,33 +341,24 @@ sub find {
         if ($file->{include} || $file->{directory}) {
             $file->{exclude} = matches_conditions($file, \@excludes, 0);
         }
-        next if !$file->{include};
-        next if $file->{exclude};
-        next if $file->{directory};
-        $nfiles++;
-        match($file);
-    }
-    if ($opts{depth} && $depth == $opts{depth}) {
-        return;
-    }
-    for my $file (@$files) {
-        if (!$file->{exclude} && $file->{directory}) {
-            my @nfiles;
-            opendir my $dh, $file->{path} or do {
-                warn "Can't opendir '$file->{path}': $!\n";
-                next;
-            };
-            for (readdir $dh) {
-                next if /^\.\.?$/;
-                my $npath = $file->{path} eq "." ? $_ : "$file->{path}/$_";
-                my $nfile = {path => $npath};
-                push @nfiles, $nfile;
-            }
-            closedir $dh;
-            if (@nfiles) {
-                find(\@nfiles, $depth + 1);
-            }
+        if ($file->{"include"} && !$file->{"exclude"} && !$file->{"directory"}) {
+            $nfiles++;
+            match($file);
+            next;
         }
+        next if !$file->{"directory"};
+        next if $file->{"exclude"};
+        next if $opts{depth} && $depth == $opts{depth};
+        opendir my $dh, $file->{path} or do {
+            warn "Can't opendir '$file->{path}': $!\n";
+            next;
+        };
+        for (readdir $dh) {
+            next if /^\.\.?$/;
+            my $file2 = {path => "$file->{path}/$_"};
+            find([$file2], $depth + 1);
+        }
+        closedir $dh;
     }
 }
 
@@ -816,20 +808,6 @@ files you want:
 
 This would find all .gz files that aren't .tar.gz files. The -X is
 necessary to disable the binary file filter.
-
-File recursion order
-====================
-
-This file recursion tries to match as early as possible then descend
-into directories. That way the top level matches can appear first even
-if one directory goes deep. This is a form of preorder traversal.
-At each level in the recursion it will do a match on all the regular
-files in the directory, then descend into the subdirectories.
-
-For example, if you have a home directory with foo.pl, bar.pl, and
-a zillion perl files under .cpan/, "gre -perl" will return foo.pl,
-bar.pl, then all the perl files under .cpan. It would be really
-annoying if it tried to get all the files under .cpan first.
 
 The idea behind file filtering
 ==============================

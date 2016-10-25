@@ -27,7 +27,7 @@ $ENV{PATH} = "../../bin:$ENV{PATH}";
 runcmd("gre apple");
 my $e = qr{(?:\e\[.*?[mK])*};
 my $test = $STDOUT =~ m{
-    ^${e}fruits.txt${e}\n
+    ^${e}./fruits.txt${e}\n
     ${e}1${e}:${e}apple${e}\n
     ${e}3${e}:pine${e}apple${e}\n$
 }x;
@@ -36,44 +36,44 @@ ok $test, "found the apples";
 runcmd("gre");
 my $out = join "", map "$_\n", sort split /\n/, $STDOUT;
 my $exp = <<EOSTR;
-dir1/bar.js
-dir1/foo.html
-dir1/simpsons.txt
-fruits.txt
-pokemon.mon
+./dir1/bar.js
+./dir1/foo.html
+./dir1/simpsons.txt
+./fruits.txt
+./pokemon.mon
 EOSTR
 is $out, $exp, "file listing recursive and textonly";
 
 runcmd("gre -ext=txt -no=simpsons");
 $test = $STDOUT eq <<EOSTR;
-fruits.txt
+./fruits.txt
 EOSTR
 ok $test, "file filtering";
 
 runcmd("gre -html -js");
 $out = join "", map "$_\n", sort split /\n/, $STDOUT;
 $exp = <<EOSTR;
-dir1/bar.js
-dir1/foo.html
+./dir1/bar.js
+./dir1/foo.html
 EOSTR
 is $out, $exp, "file filtering with combos";
 
 runcmd("gre -X");
 $out = join "", map "$_\n", sort split /\n/, $STDOUT;
 $exp = <<EOSTR;
-dir1/bar.js
-dir1/foo.html
-dir1/simpsons.txt
-fruits.txt
-fruits.txt.gz
-pokemon.mon
-pokemon.tar.gz
+./dir1/bar.js
+./dir1/foo.html
+./dir1/simpsons.txt
+./fruits.txt
+./fruits.txt.gz
+./pokemon.mon
+./pokemon.tar.gz
 EOSTR
-ok $test, "disable builtin filters";
+is $out, $exp, "disable builtin filters";
 
 runcmd("gre 'krusty the clown' -i -k");
 $test = $STDOUT eq <<EOSTR;
-dir1/simpsons.txt
+./dir1/simpsons.txt
 10:Krusty the Clown
 EOSTR
 ok $test, "ignore case";
@@ -88,7 +88,7 @@ ok $test, "man";
 
 runcmd("gre Krusty -A -k");
 $test = $STDOUT eq <<EOSTR;
-dir1/simpsons.txt
+./dir1/simpsons.txt
 10:Krusty the Clown
 11:The Happy Little Elves
 12:Patty Bouvier
@@ -97,7 +97,7 @@ ok $test, "after context";
 
 runcmd("gre Krusty -B -k");
 $test = $STDOUT eq <<EOSTR;
-dir1/simpsons.txt
+./dir1/simpsons.txt
 8:Grampa Abraham Simpson
 9:Itchy & Scratchy
 10:Krusty the Clown
@@ -106,7 +106,7 @@ ok $test, "before context";
 
 runcmd("gre Krusty -C -k");
 $test = $STDOUT eq <<EOSTR;
-dir1/simpsons.txt
+./dir1/simpsons.txt
 8:Grampa Abraham Simpson
 9:Itchy & Scratchy
 10:Krusty the Clown
@@ -133,23 +133,23 @@ ok $test, "unknown option";
 
 runcmd("gre -l Krusty");
 $test = $STDOUT eq <<EOSTR;
-dir1/simpsons.txt
+./dir1/simpsons.txt
 EOSTR
 ok $test, "list matches option";
 
 runcmd("gre -L Krusty");
 $out = join "", map "$_\n", sort split /\n/, $STDOUT;
 $exp = <<EOSTR;
-dir1/bar.js
-dir1/foo.html
-fruits.txt
-pokemon.mon
+./dir1/bar.js
+./dir1/foo.html
+./fruits.txt
+./pokemon.mon
 EOSTR
 ok $test, "list nonmatches option";
 
 runcmd("gre -m 'Char.*?zard' -k");
 $test = $STDOUT eq <<EOSTR;
-pokemon.mon
+./pokemon.mon
 Charmander
 Charmeleon
 Charizard
@@ -158,14 +158,14 @@ ok $test, "multiline";
 
 runcmd("gre zard -o -k");
 $test = $STDOUT eq <<EOSTR;
-pokemon.mon
+./pokemon.mon
 6:zard
 EOSTR
 ok $test, "only";
 
 runcmd("gre zard -p='**\$&**' -k");
 $test = $STDOUT eq <<EOSTR;
-pokemon.mon
+./pokemon.mon
 6:**zard**
 EOSTR
 ok $test, "print";
@@ -177,11 +177,11 @@ ok $test, "passthru";
 runcmd("gre apple -t");
 $out = join "", map "$_\n", sort split /\n/, $STDOUT;
 $exp = <<EOSTR;
-dir1/bar.js
-dir1/foo.html
-dir1/simpsons.txt
-fruits.txt
-pokemon.mon
+./dir1/bar.js
+./dir1/foo.html
+./dir1/simpsons.txt
+./fruits.txt
+./pokemon.mon
 EOSTR
 ok $test, "print files ignore regexp";
 
