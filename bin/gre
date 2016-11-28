@@ -355,7 +355,10 @@ sub find {
         };
         for (readdir $dh) {
             next if /^\.\.?$/;
-            my $file2 = {path => "$file->{path}/$_"};
+            my $path2 = $file->{path};
+            $path2 .= "/" if $path2 !~ m{/$};
+            $path2 .= $_;
+            my $file2 = {path => $path2};
             find([$file2], $depth + 1);
         }
         closedir $dh;
