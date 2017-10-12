@@ -82,10 +82,6 @@ runcmd("gre -help");
 $test = $STDOUT =~ /Usage:/;
 ok $test, "help";
 
-runcmd("gre -man");
-$test = $STDOUT =~ /My own take on grep\/ack/;
-ok $test, "man";
-
 runcmd("gre Krusty -A -k");
 $test = $STDOUT eq <<EOSTR;
 ./dir1/simpsons.txt

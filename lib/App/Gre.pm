@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.12";
+our $VERSION = "0.13";
 
 1;
 
@@ -12,11 +12,27 @@ __END__
 
 =head1 NAME
 
-App::Gre - A grep clone with better file filtering
+App::Gre - A grep clone using Perl regexp's with better file filtering, defaults, speed, and presentation
+
+=head1 FEATURES
+
+=over
+
+=item * Uses only Perl regexp's.
+
+=item * Searches file names with regexp's as well as their contents,
+recursively starting with current directory.
+
+=item * Speed is accomplished by only searching files you want to
+search (see "gre -combos").
+
+=item * Presentation is colorful and readable.
+
+=back
 
 =head1 SYNOPSIS
 
-    gre [-help] [-man]
+    gre [-help]
         [-A[<n>]] [-B[<n>]] [-C[<n>]] [-combos] [-d=<depth>]
         [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
         [-passthru] [-t] [-v] [-y<n>] [-X]
@@ -33,8 +49,6 @@ App::Gre - A grep clone with better file filtering
                        be current directory.
 
     -h, -?, -help      help text
-    -man               extra info about the script
-
     -A[<n>]            print n lines after the matching line, default 2
     -B[<n>]            print n lines before the matching line, default 2
     -C[<n>]            print n lines before and after the matching line, default 2
@@ -59,16 +73,13 @@ App::Gre - A grep clone with better file filtering
     -[no]xbinary
                        filters out binary files, "no" allows binary
                        files if they were previously filtered out
-    -[no][x][i]name[e]=<str>
+    -[no][x][i][name][e]=<str>
                        include files by name, "no" filters them out,
                        "i" makes the regexp case insensitive, "e" makes
                        the match use string equality instead of regexp,
                        "x" makes it an excluding filter (excludes the
                        file when matched). with "x" it can apply to and
                        prune directories.
-    -[no][x][i][e]=<str>
-                       same as -[no][x][i]name[e]=<str>. Some combinations
-                       won't work, such as -, and -i which have other meanings.
     -[no][x][i]path[e]=<str>
                        include files by full path name. "no", "x", "i", and
                        "e" options as described above.
@@ -119,9 +130,9 @@ necessary to disable the binary file filter.
 
 =head1 FILE FILTERING
 
-It's just as important to be able to filter files with regexes as
+It's just as important to be able to filter files with regexp's as
 are the file contents. In fact, the default is to list files when
-a regex is not given (or is the empty string).
+a regexp is not given (or is the empty string).
 
 The standard "includes" are done in order left to right. This:
 
@@ -131,7 +142,7 @@ will list all perl and php files. This:
 
     $ gre -perl -noname=foo -php
 
-will list all perl files, remove those whose name matches the regex
+will list all perl files, remove those whose name matches the regexp
 of foo, then add all php files. order counts. If you want all perl
 and php files whose name doesn't match foo, you need this:
 
@@ -197,7 +208,7 @@ for the full list.
 "include" filters don't have: They prune the recursive file search.
 So -xe=.git will prevent any file under a .git directory from
 being searched (the extra e at the end of -xe means to use
-string equality not regexes for the match). Normal "inclusive"
+string equality not regexp's for the match). Normal "inclusive"
 filters do not execute on directories.
 
 You can control the depth of the recursion with the -d option. -d1
@@ -211,7 +222,7 @@ you might end up in an infinite loop.
 
 =head1 IDEAS
 
-You can do multiline regexes '^sub.*^\}' (with the addition of the
+You can do multiline regexp's '^sub.*^\}' (with the addition of the
 -multiline option)
 
 The script doesn't bundle options so it only uses one dash for the
