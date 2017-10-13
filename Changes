@@ -1,5 +1,9 @@
 Revision history for App::Gre.
 
+0.14  Fri Oct 13 17:53:30 CDT 2017
+    - Remove -abs option
+    - Clean up usage statement
+
 0.13  Thu Oct 12 11:49:49 CDT 2017
     - Docs improvements (Thanks Marco)
     - Make sure man page is generated on installation

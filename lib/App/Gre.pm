@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = "0.13";
+our $VERSION = "0.14";
 
 1;
 
@@ -37,7 +37,7 @@ search (see "gre -combos").
         [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
         [-passthru] [-t] [-v] [-y<n>] [-X]
         [-[no]xbinary]
-        [-[no][x][i][r][ext,abs]=<str>]
+        [-[no][x][i][r][ext]=<str>]
         [-[no][x][i][name,path,line1][e]=<str>]
         [-[perl,html,php,js,java,cc,...]]
         [<regexp>] [<file>...]
@@ -67,45 +67,26 @@ search (see "gre -combos").
     -v, -invert        select non-matching lines
     -y1                output style 1, grouped by file, and line number preceeding matches
     -y2                output style 2, classic grep style
-    -y3                output style 3, no file/line info.
+    -y3                output style 3, no file/line info
     -X                 disables builtin default excluding filters
-
-    -[no]xbinary
-                       filters out binary files, "no" allows binary
-                       files if they were previously filtered out
+    -[no]xbinary       filters out binary files
     -[no][x][i][name][e]=<str>
-                       include files by name, "no" filters them out,
-                       "i" makes the regexp case insensitive, "e" makes
-                       the match use string equality instead of regexp,
-                       "x" makes it an excluding filter (excludes the
-                       file when matched). with "x" it can apply to and
-                       prune directories.
+                       include files by name*
     -[no][x][i]path[e]=<str>
-                       include files by full path name. "no", "x", "i", and
-                       "e" options as described above.
+                       include files by full path name*
     -[no][x][i][r]ext=<str>
-                       include files by extension name. "no", "x", "i",
-                       options as described above. by default this one
-                       does string equality (actually, makes a custom
-                       regexp so it can handle extensions like .tar.gz),
-                       and regexp only if given the "r" option. the
-                       regexp is only matched against the last component
-                       of the file name after a ".", so it can't be
-                       used to match ".tar.gz" files, use -name for
-                       that, or the unadorned -ext option.
-    -[no][x][i][r]abs=<str>
-		       include files by their absolute path. "no",
-		       "x", "i", "r" options as described above.
-		       if you give a partial str (and "r" option
-		       is not provided) the value will become the
-		       absolute path.
+                       include files by extension name*
     -[no][x][i]line1[e]=<str>
-                       include files by the first line in the file.
-                       "no", "x", "i", and "e" options as described above.
+                       include files by the first line in the file*
     -[no]{perl,html,php,js,java,cc,...}
-                       builtin filter combo. for example -html is
-                       equivalent to -ext=htm,html. use -combos to see
-                       the full list. "no" option inverts the match.
+                       include files matching builtin filter combo*
+
+    * option names for file filters can include:
+      "no" filters files out,
+      "i" makes the regexp case insensitive,
+      "e" makes the match use string equality instead of regexp,
+      "r" makes the match use regexp instead of string equality,
+      "x" makes it an excluding filter
 
 =head1 DESCRIPTION
 
