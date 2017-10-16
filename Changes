@@ -1,5 +1,8 @@
 Revision history for App::Gre.
 
+0.15  Mon Oct 16 14:49:54 CDT 2017
+    - Only keep one option name for options that used to have multiple.
+
 0.14  Fri Oct 13 17:53:30 CDT 2017
     - Remove -abs option
     - Clean up usage statement
