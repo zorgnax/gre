@@ -5,6 +5,7 @@ use warnings;
 
 my @args;
 my %opts;
+my @regexps;
 my @excludes;
 my @includes;
 my @paths;
@@ -91,14 +92,21 @@ my @defaults = (
 parse_args([@defaults]);
 read_rc();
 parse_args([@ARGV]);
-my $regexp = shift @args;
+if (!@regexps) {
+    my $regexp = shift @args;
+    if ($regexp) {
+        push @regexps, {str => $regexp};
+    }
+}
 push @paths, @args;
 
 if ($opts{multiline} && $opts{invert}) {
     die "Multiline inverted matches not supported.\n";
 }
-if ($opts{ignorecase} && $regexp) {
-    $regexp = qr/$regexp/i;
+if ($opts{ignorecase}) {
+    for my $i (0 .. $#regexps) {
+        $regexps[$i]{str} = qr/$regexps[$i]{str}/i;
+    }
 }
 
 my @files;
@@ -126,13 +134,13 @@ if (-t STDIN) {
     }
 }
 else {
-    if (!$regexp) {
+    if (!@regexps) {
         die "Regexp required!\n";
     }
     match();
 }
 
-if ($regexp) {
+if (@regexps) {
     exit !$nmatches;
 }
 else {
@@ -210,6 +218,14 @@ sub parse_args {
         elsif ($arg =~ /^-f(=(.*))?$/) {
             my $path = $1 ? $2 : shift(@$pargs);
             push @paths, $path;
+        }
+        elsif ($arg =~ /^-r(=(.*))?$/) {
+            my $regexp = $1 ? $2 : shift(@$pargs);
+            push @regexps, {str => $regexp};
+        }
+        elsif ($arg =~ /^-R(=(.*))?$/) {
+            my $regexp = $1 ? $2 : shift(@$pargs);
+            push @regexps, {str => $regexp, invert => 1};
         }
         elsif ($arg =~ /^-o$/) {
             $opts{only} = 1;
@@ -432,7 +448,7 @@ sub matches_condition {
 
 sub match {
     my ($file) = @_;
-    if (!$regexp || $opts{fileslist}) {
+    if (!@regexps || $opts{fileslist}) {
         print "$file->{path}\n";
     }
     elsif (defined $opts{filesmatch}) {
@@ -466,21 +482,46 @@ sub multiline_match {
     my $fh = get_fh($file) or return;
     my $content = do {local $/; <$fh>};
     close $fh;
-
     my $matches = 0;
-    while ($content =~ /$regexp/gms) {
+    while (1) {
+        my $matches2 = 1;
+        my @starts;
+        my @ends;
+        for my $regexp (@regexps) {
+            if ($regexp->{invert}) {
+                $matches2 &&= $content !~ /$regexp->{str}/gms;
+                @starts = @-;
+                @ends = @+;
+            }
+            else {
+                $matches2 &&= $content =~ /$regexp->{str}/gms;
+                @starts = @-;
+                @ends = @+;
+            }
+        }
+        last if !$matches2;
         if ($file && !$matches) {
             display_file($file);
         }
         $matches++;
         if ($opts{print}) {
-            eval "print \"$opts{print}\\n\";\n";
+            print match_replacement($opts{print}, $content, \@starts, \@ends);
         }
         else {
-            print "$&\n"
+            print substr($content, $starts[0], $ends[0] - $starts[0]) . "\n";
         }
     }
     $nmatches += $matches;
+}
+
+sub match_replacement {
+    my ($fmt, $content, $starts, $ends) = @_;
+    my $str = $fmt;
+    $str =~ s{\$([&1-9])}{
+        my $n = $1 eq "&" ? 0 : $1;
+        substr($content, $starts->[$n], $ends->[$n] - $starts->[$n]);
+    }ge;
+    return "$str\n";
 }
 
 sub files_match {
@@ -489,14 +530,31 @@ sub files_match {
     my $fmatches = 0;
     if ($opts{multiline}) {
         my $content = do {local $/; <$fh>};
-        if ($content =~ /$regexp/gms) {
+        my $match = 1;
+        for my $regexp (@regexps) {
+            if ($regexp->{invert}) {
+                $match &&= $content !~ /$regexp->{str}/gms;
+            }
+            else {
+                $match &&= $content =~ /$regexp->{str}/gms;
+            }
+        }
+        if ($match) {
             $fmatches++;
         }
     }
     else {
-        while (<$fh>) {
-            chomp;
-            my $match = /$regexp/g;
+        while (my $input = <$fh>) {
+            chomp $input;
+            my $match = 1;
+            for my $regexp (@regexps) {
+                if ($regexp->{invert}) {
+                    $match &&= $input !~ /$regexp->{str}/g;
+                }
+                else {
+                    $match &&= $input =~ /$regexp->{str}/g;
+                }
+            }
             $match = !$match if $opts{invert};
             if ($match) {
                 $fmatches++;
@@ -522,13 +580,29 @@ sub singleline_match {
     my @before;
     my $last_print = 0;
     my $last_match = 0;
-    while (<$fh>) {
-        chomp;
+    while (my $input = <$fh>) {
+        chomp $input;
         my $lmatches = 0;
         my @starts;
         my @ends;
         while (1) {
-            my $match = /$regexp/g;
+            my $match = 1;
+            my @starts2;
+            my @ends2;
+            my $saved_pos = pos($input);
+            for my $regexp (@regexps) {
+                pos($input) = $saved_pos;
+                if ($regexp->{invert}) {
+                    $match &&= $input !~ /$regexp->{str}/g;
+                    @starts2 = @-;
+                    @ends2 = @+;
+                }
+                else {
+                    $match &&= $input =~ /$regexp->{str}/g;
+                    @starts2 = @-;
+                    @ends2 = @+;
+                }
+            }
             $match = !$match if $opts{invert};
             last if !$match;
             $lmatches++;
@@ -536,15 +610,18 @@ sub singleline_match {
             if ($fmatches == 1 && !$opts{passthru}) {
                 display_file($file);
             }
-            display_match($file, $., $_);
+            display_match($file, $., $input, \@starts2, \@ends2);
             last if $opts{invert};
-            push @starts, $-[0];
-            push @ends, $+[0];
+            last if !@starts2 || !@ends2;
+            my $length = $ends2[0] - $starts2[0];
+            last if $length == 0;
+            push @starts, $starts2[0];
+            push @ends, $ends2[0];
         }
         if ($lmatches) {
             if ($opts{before} || $opts{after}) {
                 if ($last_print && $. > $last_print + 1) {
-                    display_jump($file, $., $_);
+                    display_jump($file, $., $input);
                 }
             }
             if ($opts{before}) {
@@ -554,20 +631,20 @@ sub singleline_match {
                     display_line($file, $bn, $before[$i]);
                 }
             }
-            display_line($file, $., $_, \@starts, \@ends);
+            display_line($file, $., $input, \@starts, \@ends);
             $last_print = $.;
             $last_match = $.;
         }
         elsif ($opts{passthru}) {
-            display_line($file, $., $_);
+            display_line($file, $., $input);
             $last_print = $.;
         }
         elsif ($opts{after} && $last_match && $. <= $last_match + $opts{after}) {
-            display_line($file, $., $_);
+            display_line($file, $., $input);
             $last_print = $.;
         }
         if ($opts{before}) {
-            push @before, $_;
+            push @before, $input;
             shift @before if @before > $opts{before};
         }
     }
@@ -601,7 +678,7 @@ sub display_jump {
 }
 
 sub display_match {
-    my ($file, $n, $line) = @_;
+    my ($file, $n, $line, $starts, $ends) = @_;
     return if !$opts{only} && !$opts{print};
     if ($file) {
         if ($opts{style} && $opts{style} == 2) {
@@ -612,13 +689,13 @@ sub display_match {
         }
     }
     if ($opts{print}) {
-        eval "print \"$opts{print}\\n\";\n";
+        print match_replacement($opts{print}, $line, $starts, $ends);
     }
     elsif ($opts{invert}) {
         print "$line\n";
     }
     else {
-        print "$&\n";
+        print substr($line, $starts->[0], $ends->[0] - $starts->[0]) . "\n";
     }
 }
 
@@ -650,7 +727,7 @@ sub usage {
 Usage: gre [-h] [-c]
            [-A[<n>]] [-B[<n>]] [-C[<n>]] [-d<n>]
            [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
-           [-t] [-u] [-v] [-y<n>] [-x]
+           [-r=<regexp>] [-R=<regexp>] [-t] [-u] [-v] [-y<n>] [-x]
            [-[no]xbinary]
            [-[no][x][i][r][ext]=<str>]
            [-[no][x][i][name,path,line1][e]=<str>]
@@ -677,6 +754,8 @@ Options:
 -m                 multiline regexp matches
 -o                 only output the matching part of the line
 -p=<str>           print customized parts of the match ($1, $&, etc. are available)
+-r=<regexp>        provide a regexp, as if it was an arg on the command line
+-R=<regexp>        like -r but line must not match regexp
 -t                 print files that would be searched (ignore regexp)
 -u                 passthrough all lines, but highlight matches
 -v                 select non-matching lines
@@ -739,7 +818,7 @@ search (see "gre -c").
     gre [-h] [-c]
         [-A[<n>]] [-B[<n>]] [-C[<n>]] [-d<n>]
         [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
-        [-t] [-u] [-v] [-y<n>] [-x]
+        [-r=<regexp>] [-R=<regexp>] [-t] [-u] [-v] [-y<n>] [-x]
         [-[no]xbinary]
         [-[no][x][i][r][ext]=<str>]
         [-[no][x][i][name,path,line1][e]=<str>]
@@ -766,6 +845,8 @@ search (see "gre -c").
     -m                 multiline regexp matches
     -o                 only output the matching part of the line
     -p=<str>           print customized parts of the match ($1, $&, etc. are available)
+    -r=<regexp>        provide a regexp, as if it was an arg on the command line
+    -R=<regexp>        like -r but line must not match regexp
     -t                 print files that would be searched (ignore regexp)
     -u                 passthrough all lines, but highlight matches
     -v                 select non-matching lines

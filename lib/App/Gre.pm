@@ -35,7 +35,7 @@ search (see "gre -c").
     gre [-h] [-c]
         [-A[<n>]] [-B[<n>]] [-C[<n>]] [-d<n>]
         [-f=<file>] [-i] [-k] [-l] [-L] [-m] [-o] [-p=<str>]
-        [-t] [-u] [-v] [-y<n>] [-x]
+        [-r=<regexp>] [-R=<regexp>] [-t] [-u] [-v] [-y<n>] [-x]
         [-[no]xbinary]
         [-[no][x][i][r][ext]=<str>]
         [-[no][x][i][name,path,line1][e]=<str>]
@@ -62,6 +62,8 @@ search (see "gre -c").
     -m                 multiline regexp matches
     -o                 only output the matching part of the line
     -p=<str>           print customized parts of the match ($1, $&, etc. are available)
+    -r=<regexp>        provide a regexp, as if it was an arg on the command line
+    -R=<regexp>        like -r but line must not match regexp
     -t                 print files that would be searched (ignore regexp)
     -u                 passthrough all lines, but highlight matches
     -v                 select non-matching lines
