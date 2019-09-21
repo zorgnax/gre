@@ -804,7 +804,7 @@ __END__
 
 =head1 NAME
 
-App::Gre - A grep clone using Perl regexp's with better file filtering, defaults, speed, and presentation
+gre - A grep clone using Perl regexp's with better file filtering, defaults, speed, and presentation
 
 =head1 SYNOPSIS
 
