@@ -160,6 +160,11 @@ else {
         die "Regexp required!\n";
     }
     match();
+
+    # In cases where you do `find . | xargs gre blah`, stdin is not a terminal,
+    # it's actually closed, so you still want to search through the files listed on
+    # the command line.
+    find(\@files, 1);
 }
 
 if (@regexps) {
